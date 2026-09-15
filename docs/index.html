@@ -5,39 +5,264 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JSCC Decoder Audio Results</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
-        h1, h2 { color: #333; }
-        .audio-container { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;}
-        audio { width: 100%; margin-top: 10px; }
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .description {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        .legend {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 50px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .legend h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .legend ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 15px;
+        }
+
+        .legend li {
+            padding-left: 20px;
+            position: relative;
+            font-size: 0.95rem;
+        }
+
+        .legend li::before {
+            content: "•";
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.5rem;
+            position: absolute;
+            left: 0;
+            top: -6px;
+        }
+
+        .sample-section {
+            margin-bottom: 60px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .sample-title {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .proposed-card {
+            background-color: #eff6ff;
+            border: 2px solid #60a5fa;
+        }
+
+        .proposed-card .card-title {
+            color: #1d4ed8;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            min-height: 20px;
+        }
+
+        audio {
+            width: 100%;
+            height: 40px;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        audio::-webkit-media-controls-enclosure {
+            background-color: #e2e8f0;
+        }
+        
+        .proposed-card audio::-webkit-media-controls-enclosure {
+            background-color: #dbeafe;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Audio Reconstruction Results using JSCC</h1>
-    <p>This page demonstrates the audio reconstruction quality of our proposed Joint Source-Channel Coding (JSCC) decoder over varying Signal-to-Noise Ratios (SNR).</p>
+    <div class="container">
+        <header>
+            <h1>Joint Source-Channel Coding (JSCC) Audio Decoder</h1>
+            <p class="description">
+                Experimental results comparing audio reconstruction quality across different methods. 
+                All transmitted samples are evaluated at an SNR corresponding to a <strong>34 dB transmit power</strong>.
+            </p>
+        </header>
 
-    <h2>Experiment 1: Speech Transmission at SNR = 5dB</h2>
-    
-    <div class="audio-container">
-        <strong>Original Audio</strong>
-        <audio controls>
-            <source src="audio/original_audio_0.wav" type="audio/wav">
-            Your browser does not support the audio element.
-        </audio>
-    </div>
+        <div class="legend">
+            <h3>Methodology & Bitrate Allocation (3 kbps Total Budget)</h3>
+            <ul>
+                <li><strong>Original:</strong> Uncompressed reference audio.</li>
+                <li><strong>Baseline Encodec (3 kbps):</strong> Source coding only (3 kbps Encodec).</li>
+                <li><strong>Baseline Encodec + Conv:</strong> Encodec (2.25 kbps) + Convolutional Coding (0.75 kbps parity).</li>
+                <li><strong>Proposed JSCC:</strong> Encodec (2.25 kbps) + Proposed Parity Network (0.75 kbps parity).</li>
+            </ul>
+        </div>
 
-    <div class="audio-container">
-        <strong>Baseline Decoder (e.g., Separate Source-Channel)</strong>
-        <audio controls>
-            <source src="audio/received_audio_0_3.wav" type="audio/wav">
-        </audio>
-    </div>
+        <!-- SAMPLE 0 SECTION -->
+        <div class="sample-section">
+            <h2 class="sample-title">Audio Sample 0</h2>
+            <div class="grid">
+                
+                <div class="card">
+                    <div class="card-title">Original Audio</div>
+                    <div class="card-subtitle">Uncompressed reference</div>
+                    <audio controls preload="none">
+                        <source src="original_audio_0.wav" type="audio/wav">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Baseline: Encodec (3 kbps)</div>
+                    <div class="card-subtitle">3 kbps source / 0 kbps parity</div>
+                    <audio controls preload="none">
+                        <source src="received_audio_0_3.wav" type="audio/wav">
+                    </audio>
+                </div>
 
-    <div class="audio-container">
-        <strong>Proposed JSCC Decoder</strong>
-        <audio controls>
-            <source src="audio/received_audio_0_proposed.wav" type="audio/wav">
-        </audio>
+                <div class="card">
+                    <div class="card-title">Baseline: Encodec + Convolutional</div>
+                    <div class="card-subtitle">2.25 kbps source + 0.75 kbps Conv. parity</div>
+                    <audio controls preload="none">
+                        <source src="received_audio_0_conv.wav" type="audio/wav">
+                    </audio>
+                </div>
+
+                <div class="card proposed-card">
+                    <div class="card-title">Proposed JSCC Method</div>
+                    <div class="card-subtitle">2.25 kbps source + 0.75 kbps Proposed parity</div>
+                    <audio controls preload="none">
+                        <source src="received_audio_0_proposed.wav" type="audio/wav">
+                    </audio>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SAMPLE 10 SECTION -->
+        <div class="sample-section">
+            <h2 class="sample-title">Audio Sample 10</h2>
+            <div class="grid">
+                
+                <div class="card">
+                    <div class="card-title">Original Audio</div>
+                    <div class="card-subtitle">Uncompressed reference</div>
+                    <audio controls preload="none">
+                        <source src="original_audio_10.wav" type="audio/wav">
+                    </audio>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Baseline: Encodec (3 kbps)</div>
+                    <div class="card-subtitle">3 kbps source / 0 kbps parity</div>
+                    <audio controls preload="none">
+                        <source src="received_audio_10_3.wav" type="audio/wav">
+                    </audio>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Baseline: Encodec + Convolutional</div>
+                    <div class="card-subtitle">2.25 kbps source + 0.75 kbps Conv. parity</div>
+                    <audio controls preload="none">
+                        <source src="received_audio_10_conv.wav" type="audio/wav">
+                    </audio>
+                </div>
+
+                <div class="card proposed-card">
+                    <div class="card-title">Proposed JSCC Method</div>
+                    <div class="card-subtitle">2.25 kbps source + 0.75 kbps Proposed parity</div>
+                    <audio controls preload="none">
+                        <source src="received_audio_10_proposed.wav" type="audio/wav">
+                    </audio>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
 </body>
