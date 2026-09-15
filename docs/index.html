@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSCC Decoder Audio Results</title>
+    <title>Deep JSCC Audio Decoder Results</title>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -12,6 +12,9 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
+            --proposed-bg: #eff6ff;
+            --proposed-border: #60a5fa;
+            --proposed-text: #1d4ed8;
         }
         
         body {
@@ -24,7 +27,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
@@ -43,7 +46,7 @@
         .description {
             font-size: 1.1rem;
             color: var(--text-muted);
-            max-width: 750px;
+            max-width: 800px;
             margin: 0 auto;
         }
 
@@ -100,49 +103,67 @@
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 10px;
             margin-top: 0;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-size: 1.5rem;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        .original-audio-box {
+            background-color: #f1f5f9;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
             gap: 20px;
         }
+        
+        .original-audio-box strong {
+            white-space: nowrap;
+        }
 
-        .card {
-            background: var(--bg-color);
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td {
             border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 20px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            padding: 15px;
+            text-align: center;
+            vertical-align: middle;
         }
 
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-
-        .proposed-card {
-            background-color: #eff6ff;
-            border: 2px solid #60a5fa;
-        }
-
-        .proposed-card .card-title {
-            color: #1d4ed8;
-        }
-
-        .card-title {
+        th {
+            background-color: #f8fafc;
             font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 4px;
+            color: var(--text-main);
+            font-size: 0.95rem;
         }
 
-        .card-subtitle {
-            font-size: 0.85rem;
+        .tx-col {
+            width: 120px;
+            background-color: #f8fafc;
+            font-weight: bold;
             color: var(--text-muted);
-            margin-bottom: 15px;
-            min-height: 20px;
+        }
+
+        .proposed-header {
+            background-color: #dbeafe;
+            color: var(--proposed-text);
+            border: 2px solid var(--proposed-border);
+            border-bottom: 1px solid var(--proposed-border);
+        }
+
+        .proposed-cell {
+            background-color: var(--proposed-bg);
+            border-left: 2px solid var(--proposed-border);
+            border-right: 2px solid var(--proposed-border);
+        }
+        
+        /* Add bottom border to the last proposed cell */
+        tr:last-child .proposed-cell {
+            border-bottom: 2px solid var(--proposed-border);
         }
 
         audio {
@@ -152,11 +173,7 @@
             outline: none;
         }
 
-        audio::-webkit-media-controls-enclosure {
-            background-color: #e2e8f0;
-        }
-        
-        .proposed-card audio::-webkit-media-controls-enclosure {
+        .proposed-cell audio::-webkit-media-controls-enclosure {
             background-color: #dbeafe;
         }
     </style>
@@ -167,8 +184,7 @@
         <header>
             <h1>Joint Source-Channel Coding (JSCC) Audio Decoder</h1>
             <p class="description">
-                Experimental results comparing audio reconstruction quality across different methods. 
-                All transmitted samples are evaluated at an SNR corresponding to a <strong>34 dB transmit power</strong>.
+                Experimental results comparing audio reconstruction quality across different methods at varying Transmit (Tx) Power levels (32 dB, 34 dB, 36 dB).
             </p>
         </header>
 
@@ -176,91 +192,179 @@
             <h3>Methodology & Bitrate Allocation (3 kbps Total Budget)</h3>
             <ul>
                 <li><strong>Original:</strong> Uncompressed reference audio.</li>
-                <li><strong>Baseline Encodec (3 kbps):</strong> Source coding only (3 kbps Encodec).</li>
+                <li><strong>Baseline Encodec (3 kbps):</strong> Source coding only (3 kbps Encodec, 0 kbps parity).</li>
                 <li><strong>Baseline Encodec + Conv:</strong> Encodec (2.25 kbps) + Convolutional Coding (0.75 kbps parity).</li>
                 <li><strong>Proposed JSCC:</strong> Encodec (2.25 kbps) + Proposed Parity Network (0.75 kbps parity).</li>
             </ul>
         </div>
 
-        <!-- SAMPLE 0 SECTION -->
+        <!-- MACRO: GENERATING SAMPLES -->
+        <!-- You can copy-paste this block for additional samples if needed -->
+        
+        <!-- SAMPLE 0 -->
         <div class="sample-section">
             <h2 class="sample-title">Audio Sample 0</h2>
-            <div class="grid">
-                
-                <div class="card">
-                    <div class="card-title">Original Audio</div>
-                    <div class="card-subtitle">Uncompressed reference</div>
-                    <audio controls preload="none">
-                        <source src="audio/original_audio_0.wav" type="audio/wav">
-                        Your browser does not support the audio element.
-                    </audio>
-                </div>
-                
-                <div class="card">
-                    <div class="card-title">Baseline: Encodec (3 kbps)</div>
-                    <div class="card-subtitle">3 kbps source / 0 kbps parity</div>
-                    <audio controls preload="none">
-                        <source src="audio/received_audio_0_3.wav" type="audio/wav">
-                    </audio>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">Baseline: Encodec + Convolutional</div>
-                    <div class="card-subtitle">2.25 kbps source + 0.75 kbps Conv. parity</div>
-                    <audio controls preload="none">
-                        <source src="audio/received_audio_0_conv.wav" type="audio/wav">
-                    </audio>
-                </div>
-
-                <div class="card proposed-card">
-                    <div class="card-title">Proposed JSCC Method</div>
-                    <div class="card-subtitle">2.25 kbps source + 0.75 kbps Proposed parity</div>
-                    <audio controls preload="none">
-                        <source src="audio/received_audio_0_proposed.wav" type="audio/wav">
-                    </audio>
-                </div>
-
+            
+            <div class="original-audio-box">
+                <strong>Original Reference:</strong>
+                <audio controls preload="none">
+                    <source src="audio/original_audio/original_audio_0.wav" type="audio/wav">
+                </audio>
             </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th class="tx-col">Tx Power</th>
+                        <th>Baseline: Encodec<br><small>(3 kbps)</small></th>
+                        <th>Baseline: Encodec + Conv<br><small>(2.25 + 0.75 kbps)</small></th>
+                        <th class="proposed-header">Proposed JSCC<br><small>(2.25 + 0.75 kbps)</small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tx-col">32 dB</td>
+                        <td><audio controls preload="none"><source src="audio/audio_32dB/received_audio_0_3.wav" type="audio/wav"></audio></td>
+                        <td><audio controls preload="none"><source src="audio/audio_32dB/received_audio_0_conv.wav" type="audio/wav"></audio></td>
+                        <td class="proposed-cell"><audio controls preload="none"><source src="audio/audio_32dB/received_audio_0_proposed.wav" type="audio/wav"></audio></td>
+                    </tr>
+                    <tr>
+                        <td class="tx-col">34 dB</td>
+                        <td><audio controls preload="none"><source src="audio/audio_34dB/received_audio_0_3.wav" type="audio/wav"></audio></td>
+                        <td><audio controls preload="none"><source src="audio/audio_34dB/received_audio_0_conv.wav" type="audio/wav"></audio></td>
+                        <td class="proposed-cell"><audio controls preload="none"><source src="audio/audio_34dB/received_audio_0_proposed.wav" type="audio/wav"></audio></td>
+                    </tr>
+                    <tr>
+                        <td class="tx-col">36 dB</td>
+                        <td><audio controls preload="none"><source src="audio/audio_36dB/received_audio_0_3.wav" type="audio/wav"></audio></td>
+                        <td><audio controls preload="none"><source src="audio/audio_36dB/received_audio_0_conv.wav" type="audio/wav"></audio></td>
+                        <td class="proposed-cell"><audio controls preload="none"><source src="audio/audio_36dB/received_audio_0_proposed.wav" type="audio/wav"></audio></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-        <!-- SAMPLE 10 SECTION -->
+        <!-- SAMPLE 37 -->
         <div class="sample-section">
-            <h2 class="sample-title">Audio Sample 10</h2>
-            <div class="grid">
-                
-                <div class="card">
-                    <div class="card-title">Original Audio</div>
-                    <div class="card-subtitle">Uncompressed reference</div>
-                    <audio controls preload="none">
-                        <source src="audio/original_audio_10.wav" type="audio/wav">
-                    </audio>
-                </div>
-                
-                <div class="card">
-                    <div class="card-title">Baseline: Encodec (3 kbps)</div>
-                    <div class="card-subtitle">3 kbps source / 0 kbps parity</div>
-                    <audio controls preload="none">
-                        <source src="audio/received_audio_10_3.wav" type="audio/wav">
-                    </audio>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">Baseline: Encodec + Convolutional</div>
-                    <div class="card-subtitle">2.25 kbps source + 0.75 kbps Conv. parity</div>
-                    <audio controls preload="none">
-                        <source src="audio/received_audio_10_conv.wav" type="audio/wav">
-                    </audio>
-                </div>
-
-                <div class="card proposed-card">
-                    <div class="card-title">Proposed JSCC Method</div>
-                    <div class="card-subtitle">2.25 kbps source + 0.75 kbps Proposed parity</div>
-                    <audio controls preload="none">
-                        <source src="audio/received_audio_10_proposed.wav" type="audio/wav">
-                    </audio>
-                </div>
-
+            <h2 class="sample-title">Audio Sample 37</h2>
+            <div class="original-audio-box">
+                <strong>Original Reference:</strong>
+                <audio controls preload="none">
+                    <source src="audio/original_audio/original_audio_37.wav" type="audio/wav">
+                </audio>
             </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="tx-col">Tx Power</th>
+                        <th>Baseline: Encodec<br><small>(3 kbps)</small></th>
+                        <th>Baseline: Encodec + Conv<br><small>(2.25 + 0.75 kbps)</small></th>
+                        <th class="proposed-header">Proposed JSCC<br><small>(2.25 + 0.75 kbps)</small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tx-col">32 dB</td>
+                        <td><audio controls preload="none"><source src="audio/audio_32dB/received_audio_37_3.wav" type="audio/wav"></audio></td>
+                        <td><audio controls preload="none"><source src="audio/audio_32dB/received_audio_37_conv.wav" type="audio/wav"></audio></td>
+                        <td class="proposed-cell"><audio controls preload="none"><source src="audio/audio_32dB/received_audio_37_proposed.wav" type="audio/wav"></audio></td>
+                    </tr>
+                    <tr>
+                        <td class="tx-col">34 dB</td>
+                        <td><audio controls preload="none"><source src="audio/audio_34dB/received_audio_37_3.wav" type="audio/wav"></audio></td>
+                        <td><audio controls preload="none"><source src="audio/audio_34dB/received_audio_37_conv.wav" type="audio/wav"></audio></td>
+                        <td class="proposed-cell"><audio controls preload="none"><source src="audio/audio_34dB/received_audio_37_proposed.wav" type="audio/wav"></audio></td>
+                    </tr>
+                    <tr>
+                        <td class="tx-col">36 dB</td>
+                        <td><audio controls preload="none"><source src="audio/audio_36dB/received_audio_37_3.wav" type="audio/wav"></audio></td>
+                        <td><audio controls preload="none"><source src="audio/audio_36dB/received_audio_37_conv.wav" type="audio/wav"></audio></td>
+                        <td class="proposed-cell"><audio controls preload="none"><source src="audio/audio_36dB/received_audio_37_proposed.wav" type="audio/wav"></audio></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SAMPLE 59 -->
+        <div class="sample-section">
+            <h2 class="sample-title">Audio Sample 59</h2>
+            <div class="original-audio-box">
+                <strong>Original Reference:</strong>
+                <audio controls preload="none">
+                    <source src="audio/original_audio/original_audio_59.wav" type="audio/wav">
+                </audio>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="tx-col">Tx Power</th>
+                        <th>Baseline: Encodec<br><small>(3 kbps)</small></th>
+                        <th>Baseline: Encodec + Conv<br><small>(2.25 + 0.75 kbps)</small></th>
+                        <th class="proposed-header">Proposed JSCC<br><small>(2.25 + 0.75 kbps)</small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tx-col">32 dB</td>
+                        <td><audio controls preload="none"><source src="audio/audio_32dB/received_audio_59_3.wav" type="audio/wav"></audio></td>
+                        <td><audio controls preload="none"><source src="audio/audio_32dB/received_audio_59_conv.wav" type="audio/wav"></audio></td>
+                        <td class="proposed-cell"><audio controls preload="none"><source src="audio/audio_32dB/received_audio_59_proposed.wav" type="audio/wav"></audio></td>
+                    </tr>
+                    <tr>
+                        <td class="tx-col">34 dB</td>
+                        <td><audio controls preload="none"><source src="audio/audio_34dB/received_audio_59_3.wav" type="audio/wav"></audio></td>
+                        <td><audio controls preload="none"><source src="audio/audio_34dB/received_audio_59_conv.wav" type="audio/wav"></audio></td>
+                        <td class="proposed-cell"><audio controls preload="none"><source src="audio/audio_34dB/received_audio_59_proposed.wav" type="audio/wav"></audio></td>
+                    </tr>
+                    <tr>
+                        <td class="tx-col">36 dB</td>
+                        <td><audio controls preload="none"><source src="audio/audio_36dB/received_audio_59_3.wav" type="audio/wav"></audio></td>
+                        <td><audio controls preload="none"><source src="audio/audio_36dB/received_audio_59_conv.wav" type="audio/wav"></audio></td>
+                        <td class="proposed-cell"><audio controls preload="none"><source src="audio/audio_36dB/received_audio_59_proposed.wav" type="audio/wav"></audio></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SAMPLE 61 -->
+        <div class="sample-section">
+            <h2 class="sample-title">Audio Sample 61</h2>
+            <div class="original-audio-box">
+                <strong>Original Reference:</strong>
+                <audio controls preload="none">
+                    <source src="audio/original_audio/original_audio_61.wav" type="audio/wav">
+                </audio>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="tx-col">Tx Power</th>
+                        <th>Baseline: Encodec<br><small>(3 kbps)</small></th>
+                        <th>Baseline: Encodec + Conv<br><small>(2.25 + 0.75 kbps)</small></th>
+                        <th class="proposed-header">Proposed JSCC<br><small>(2.25 + 0.75 kbps)</small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tx-col">32 dB</td>
+                        <td><audio controls preload="none"><source src="audio/audio_32dB/received_audio_61_3.wav" type="audio/wav"></audio></td>
+                        <td><audio controls preload="none"><source src="audio/audio_32dB/received_audio_61_conv.wav" type="audio/wav"></audio></td>
+                        <td class="proposed-cell"><audio controls preload="none"><source src="audio/audio_32dB/received_audio_61_proposed.wav" type="audio/wav"></audio></td>
+                    </tr>
+                    <tr>
+                        <td class="tx-col">34 dB</td>
+                        <td><audio controls preload="none"><source src="audio/audio_34dB/received_audio_61_3.wav" type="audio/wav"></audio></td>
+                        <td><audio controls preload="none"><source src="audio/audio_34dB/received_audio_61_conv.wav" type="audio/wav"></audio></td>
+                        <td class="proposed-cell"><audio controls preload="none"><source src="audio/audio_34dB/received_audio_61_proposed.wav" type="audio/wav"></audio></td>
+                    </tr>
+                    <tr>
+                        <td class="tx-col">36 dB</td>
+                        <td><audio controls preload="none"><source src="audio/audio_36dB/received_audio_61_3.wav" type="audio/wav"></audio></td>
+                        <td><audio controls preload="none"><source src="audio/audio_36dB/received_audio_61_conv.wav" type="audio/wav"></audio></td>
+                        <td class="proposed-cell"><audio controls preload="none"><source src="audio/audio_36dB/received_audio_61_proposed.wav" type="audio/wav"></audio></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
     </div>
